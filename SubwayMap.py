@@ -1,11 +1,12 @@
-__authors__='TO_BE_FILLED'
-__group__='TO_BE_FILLED'
+__authors__ = 'TO_BE_FILLED'
+__group__ = 'TO_BE_FILLED'
 # _________________________________________________________________________________________
 # Intel.ligencia Artificial
 # Grau en Enginyeria Informatica
 # Curs 2016- 2017
 # Universitat Autonoma de Barcelona
 # _________________________________________________________________________________________
+
 
 class Map:
     """
@@ -21,6 +22,7 @@ class Map:
                 ....
             }
     """
+
     def __init__(self):
         self.stations = {}
         self.connections = {}
@@ -53,6 +55,7 @@ class Path:
         # You can reach the last and penultimate station of a path
         >>> path.last, path.penultimate
     """
+
     def __init__(self, route):
         if type(route) is list:
             self.route = route
@@ -61,7 +64,8 @@ class Path:
 
         self.head = self.route[0]
         self.last = self.route[-1]
-        if len(self.route) >= 2: self.penultimate = self.route[-2]
+        if len(self.route) >= 2:
+            self.penultimate = self.route[-2]
         # Real cost
         self.g = 0
         # Heuristic cost

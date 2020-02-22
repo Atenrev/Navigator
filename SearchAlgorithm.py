@@ -1,7 +1,7 @@
 # This file contains all the required routines to make an A* search algorithm.
 #
-__authors__ = 'TO_BE_FILLED'
-__group__ = 'TO_BE_FILLED'
+__authors__ = 'Sergi Masip Cabeza'
+__group__ = 'DM.12'
 # _________________________________________________________________________________________
 # Intel.ligencia Artificial
 # Grau en Enginyeria Informatica
@@ -27,7 +27,14 @@ def expand(path, map):
             path_list (list): List of paths that are connected to the given path.
     """
 
-    pass
+    expanded = []
+
+    for i in map.connections[path.last]:
+        new_path = Path(path.route.copy())
+        new_path.add_route(i)
+        expanded.append(new_path)
+
+    return expanded
 
 
 def remove_cycles(path_list):
@@ -39,7 +46,15 @@ def remove_cycles(path_list):
         Returns:
             path_list (list): Expanded paths without cycles.
     """
-    pass
+
+    uncycled = []
+
+    for path in path_list:
+        route = path.route
+        if len(route) == len(set(route)):
+            uncycled.append(path)
+
+    return uncycled
 
 
 def insert_depth_first_search(expand_paths, list_of_path):
@@ -52,7 +67,8 @@ def insert_depth_first_search(expand_paths, list_of_path):
         Returns:
             list_of_path (LIST of Path Class): List of Paths where Expanded Path is inserted
     """
-    pass
+
+    return list(expand_paths + list_of_path)
 
 
 def depth_first_search(origin_id, destination_id, map):
@@ -66,7 +82,19 @@ def depth_first_search(origin_id, destination_id, map):
         Returns:
             list_of_path[0] (Path Class): the route that goes from origin_id to destination_id
     """
-    pass
+
+    paths = [Path(origin_id)]
+
+    while paths and paths[0].last != destination_id:
+        expanded = expand(paths[0], map)
+        uncycled = remove_cycles(expanded)
+        paths.pop(0)
+        paths = insert_depth_first_search(uncycled, paths)
+
+    if paths:
+        return paths[0]
+    else:
+        return []
 
 
 def insert_breadth_first_search(expand_paths, list_of_path):
@@ -79,7 +107,8 @@ def insert_breadth_first_search(expand_paths, list_of_path):
            Returns:
                list_of_path (LIST of Path Class): List of Paths where Expanded Path is inserted
     """
-    pass
+
+    return list(list_of_path + expand_paths)
 
 
 def breadth_first_search(origin_id, destination_id, map):
@@ -93,7 +122,19 @@ def breadth_first_search(origin_id, destination_id, map):
         Returns:
             list_of_path[0] (Path Class): The route that goes from origin_id to destination_id
     """
-    pass
+
+    paths = [Path(origin_id)]
+
+    while paths and paths[0].last != destination_id:
+        expanded = expand(paths[0], map)
+        uncycled = remove_cycles(expanded)
+        paths.pop(0)
+        paths = insert_breadth_first_search(uncycled, paths)
+
+    if paths:
+        return paths[0]
+    else:
+        return []
 
 
 def calculate_cost(expand_paths, map, type_preference=0):
@@ -159,7 +200,6 @@ def calculate_heuristics(expand_paths, map, destination_id, type_preference=0):
             expand_paths (LIST of Path Class): Expanded paths with updated heuristics
     """
     pass
-
 
 
 def update_f(expand_paths):

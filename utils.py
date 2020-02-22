@@ -7,12 +7,15 @@ import time
 # Infinite cost represented by INF
 INF = 9999
 
+
 def euclidean_dist(x, y):
     x1, y1 = x
     x2, y2 = y
     return math.sqrt((x1-x2)**2 + (y1-y2)**2)
 
 # readStationInformation: Given a filename, it reads the information of this file.
+
+
 def read_station_information(filename):
     map = Map()
     with open(filename, 'r') as fileMetro:
@@ -20,7 +23,7 @@ def read_station_information(filename):
             information = line.split('\t')
             # TODO: Change the monstrous way of parsing
             map.add_station(int(information[0]), information[1], information[2], int(information[3]),
-                                   int((information[4].replace('\n', '')).replace(' ', '')))
+                            int((information[4].replace('\n', '')).replace(' ', '')))
     return map
 
 
@@ -58,19 +61,20 @@ def print_list_of_path_with_cost(pathList):
 class TestTimeout(Exception):
     pass
 
+
 class test_timeout:
-  def __init__(self, seconds, error_message=None):
-    if error_message is None:
-      error_message = 'test timed out after {}s.'.format(seconds)
-    self.seconds = seconds
-    self.error_message = error_message
+    def __init__(self, seconds, error_message=None):
+        if error_message is None:
+            error_message = 'test timed out after {}s.'.format(seconds)
+        self.seconds = seconds
+        self.error_message = error_message
 
-  def handle_timeout(self, signum, frame):
-    raise TestTimeout(self.error_message)
+    def handle_timeout(self, signum, frame):
+        raise TestTimeout(self.error_message)
 
-  def __enter__(self):
-    signal.signal(signal.SIGALRM, self.handle_timeout)
-    signal.alarm(self.seconds)
+    def __enter__(self):
+        signal.signal(signal.SIGALRM, self.handle_timeout)
+        signal.alarm(self.seconds)
 
-  def __exit__(self, exc_type, exc_val, exc_tb):
-    signal.alarm(0)
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        signal.alarm(0)
