@@ -1,6 +1,6 @@
 # This file contains all the required routines to make an A* search algorithm.
 #
-__authors__ = 'Sergi Masip Cabeza'
+__authors__ = '1533031'
 __group__ = 'DM.12'
 # _________________________________________________________________________________________
 # Intel.ligencia Artificial
@@ -152,7 +152,33 @@ def calculate_cost(expand_paths, map, type_preference=0):
             Returns:
                 expand_paths (LIST of Paths): Expanded path with updated cost
     """
-    pass
+
+    if type_preference == 0:
+        for path in expand_paths:
+            path.update_g(1)
+
+    elif type_preference == 1:
+        for path in expand_paths:
+            g = map.connections[path.penultimate][path.last]
+            path.update_g(g)
+
+    elif type_preference == 2:
+        for path in expand_paths:
+            last_station = map.stations[path.last]
+            penultimate_station = map.stations[path.penultimate]
+            coord_last = [last_station["x"], last_station["y"]]
+            coord_penultimate = [
+                penultimate_station["x"], penultimate_station["y"]]
+
+            g = euclidean_dist(coord_penultimate, coord_last)
+            path.update_g(g)
+
+    elif type_preference == 3:
+        for path in expand_paths:
+            if map.stations[path.last]["name"] == map.stations[path.penultimate]["name"]:
+                path.update_g(1)
+
+    return expand_paths
 
 
 def insert_cost(expand_paths, list_of_path):
@@ -253,7 +279,21 @@ def coord2station(coord, map):
         Returns:
             possible_origins (list): List of the Indexes of stations, which corresponds to the closest station
     """
-    pass
+
+    close_stations = []
+    min_dist = INF
+
+    for id, station in map.stations.items():
+        station_xy = [station["x"], station["y"]]
+        dist = euclidean_dist(station_xy, coord)
+
+        if dist < min_dist:
+            close_stations = [id]
+            min_dist = dist
+        elif dist == min_dist:
+            close_stations.append(id)
+
+    return close_stations
 
 
 def Astar(origin_coor, dest_coor, map, type_preference=0):

@@ -71,28 +71,28 @@ class TestCases(unittest.TestCase):
         self.assertEqual(route3, Path([5, 10, 11, 12]))
         self.assertEqual(route4, Path([14, 13, 12, 11, 10]))
 
-    # def test_calculate_cost(self):
-    #     list_of_path = [Path([7, 6]), Path([7, 8])]
-    #     updated_paths = calculate_cost(
-    #         list_of_path, self.map, type_preference=0)
-    #     self.assertEqual([path.g for path in updated_paths], [1, 1])
+    def test_calculate_cost(self):
+        list_of_path = [Path([7, 6]), Path([7, 8])]
+        updated_paths = calculate_cost(
+            list_of_path, self.map, type_preference=0)
+        self.assertEqual([path.g for path in updated_paths], [1, 1])
 
-    #     list_of_path = [Path([7, 6]), Path([7, 8])]
-    #     updated_paths = calculate_cost(
-    #         list_of_path, self.map, type_preference=1)
-    #     self.assertEqual([path.g for path in updated_paths],
-    #                      [4.21429, 6.03739])
+        list_of_path = [Path([7, 6]), Path([7, 8])]
+        updated_paths = calculate_cost(
+            list_of_path, self.map, type_preference=1)
+        self.assertEqual([path.g for path in updated_paths],
+                         [4.21429, 6.03739])
 
-    #     list_of_path = [Path([7, 6]), Path([7, 8])]
-    #     updated_paths = calculate_cost(
-    #         list_of_path, self.map, type_preference=2)
-    #     self.assertEqual([path.g for path in updated_paths],
-    #                      [59.000060000000005, 84.52346])
+        list_of_path = [Path([7, 6]), Path([7, 8])]
+        updated_paths = calculate_cost(
+            list_of_path, self.map, type_preference=2)
+        self.assertEqual([path.g for path in updated_paths],
+                         [59.000060000000005, 84.52346])
 
-    #     list_of_path = [Path([7, 6]), Path([7, 8])]
-    #     updated_paths = calculate_cost(
-    #         list_of_path, self.map, type_preference=3)
-    #     self.assertEqual([path.g for path in updated_paths], [0, 0])
+        list_of_path = [Path([7, 6]), Path([7, 8])]
+        updated_paths = calculate_cost(
+            list_of_path, self.map, type_preference=3)
+        self.assertEqual([path.g for path in updated_paths], [0, 0])
 
     # def test_uniform_cost_search(self):
     #     route = uniform_cost_search(9, 3, self.map, 0)
@@ -174,15 +174,15 @@ class TestCases(unittest.TestCase):
     #     self.assertEqual(list_of_path_removed, [path_1, path_2])
     #     self.assertEqual(new_paths, expand_paths[0:1])
 
-    # def test_coord2station(self):
-    #     stationID = coord2station([105, 205], self.map)
-    #     self.assertEqual(stationID, [8, 12, 13])
+    def test_coord2station(self):
+        stationID = coord2station([105, 205], self.map)
+        self.assertEqual(stationID, [8, 12, 13])
 
-    #     stationID = coord2station([300, 111], self.map)
-    #     self.assertEqual(stationID, [3])
+        stationID = coord2station([300, 111], self.map)
+        self.assertEqual(stationID, [3])
 
-    #     stationID = coord2station([10, 11], self.map)
-    #     self.assertEqual(stationID, [1])
+        stationID = coord2station([10, 11], self.map)
+        self.assertEqual(stationID, [1])
 
     # def test_Astar(self):
 
