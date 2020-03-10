@@ -16,39 +16,6 @@ import math
 import copy
 
 
-class CoolerPath(Path):
-    def __init__(self, route):
-        self.transfers = 0
-        self.g = 0
-        self.h = 0
-        self.f = 0
-
-        if type(route) is list:
-            self.route = route
-        elif type(route) is CoolerPath:
-            self.route = route.route.copy()
-            self.transfers = route.transfers
-            self.g = route.g
-            self.h = route.h
-            self.f = route.f
-        elif type(route) is Path:
-            self.route = route.route.copy()
-            self.g = route.g
-            self.h = route.h
-            self.f = route.f
-        else:
-            self.route = [route]
-
-        self.head = self.route[0]
-        self.last = self.route[-1]
-
-        if len(self.route) >= 2:
-            self.penultimate = self.route[-2]
-
-    def update_transfers(self, v):
-        self.transfers += v
-
-
 def get_cost(x): return x.g
 
 
@@ -66,12 +33,8 @@ def expand(path, map):
     expanded = []
 
     for i in map.connections[path.last]:
-        new_path = CoolerPath(path)
+        new_path = Path(path.route.copy())
         new_path.add_route(i)
-
-        if map.stations[new_path.last]["name"] == map.stations[new_path.penultimate]["name"]:
-            new_path.update_transfers(1)
-
         expanded.append(new_path)
 
     return expanded
@@ -123,7 +86,7 @@ def depth_first_search(origin_id, destination_id, map):
             list_of_path[0] (Path Class): the route that goes from origin_id to destination_id
     """
 
-    paths = [CoolerPath(origin_id)]
+    paths = [Path(origin_id)]
 
     while paths and paths[0].last != destination_id:
         expanded = expand(paths[0], map)
@@ -163,7 +126,7 @@ def breadth_first_search(origin_id, destination_id, map):
             list_of_path[0] (Path Class): The route that goes from origin_id to destination_id
     """
 
-    paths = [CoolerPath(origin_id)]
+    paths = [Path(origin_id)]
 
     while paths and paths[0].last != destination_id:
         expanded = expand(paths[0], map)
@@ -194,7 +157,6 @@ def calculate_cost(expand_paths, map, type_preference=0):
     """
 
     if type_preference == 0:
-        # El cost es calcula en canviar d'estació o sense comptar transbordaments.
         for path in expand_paths:
             path.update_g(1)
 
@@ -215,9 +177,8 @@ def calculate_cost(expand_paths, map, type_preference=0):
 
     elif type_preference == 3:
         for path in expand_paths:
-            path.g = path.transfers
-            # if map.stations[path.last]["name"] == map.stations[path.penultimate]["name"]:
-            #     path.update_g(1)
+            if map.stations[path.last]["name"] == map.stations[path.penultimate]["name"]:
+                path.update_g(1)
 
     return expand_paths
 
@@ -250,7 +211,7 @@ def uniform_cost_search(origin_id, destination_id, map, type_preference=0):
             list_of_path[0] (Path Class): The route that goes from origin_id to destination_id
     """
 
-    paths = [CoolerPath(origin_id)]
+    paths = [Path(origin_id)]
 
     while paths and paths[0].last != destination_id:
         expanded = expand(paths[0], map)
@@ -283,19 +244,16 @@ def calculate_heuristics(expand_paths, map, destination_id, type_preference=0):
             expand_paths (LIST of Path Class): Expanded paths with updated heuristics
     """
     if type_preference == 0:
-        # Què coi és l'adjacència?
         for path in expand_paths:
             path.update_h(uniform_cost_search(
                 path.last, destination_id, map, type_preference).g)
 
     elif type_preference == 1:
-        # En funció de què la calculem?
         for path in expand_paths:
             path.update_h(uniform_cost_search(
                 path.last, destination_id, map, type_preference).g)
 
     elif type_preference == 2:
-        # L'única que sé que és correcta
         for path in expand_paths:
             last_station = map.stations[path.last]
             destination = map.stations[destination_id]
@@ -310,7 +268,7 @@ def calculate_heuristics(expand_paths, map, destination_id, type_preference=0):
         for path in expand_paths:
             # Which criteria shall we follow?
             path.update_h(uniform_cost_search(
-                path.last, destination_id, map, 1).transfers)
+                path.last, destination_id, map, 1).g)
 
     return expand_paths
 
