@@ -49,7 +49,17 @@ class CoolerPath(Path):
         self.transfers += v
 
 
-def get_cost(x): return x.g
+def get_maximum_velocity(map):
+    MAX_VELOCITY = max([map.stations[s]["velocity"] for s in map.stations])
+    return MAX_VELOCITY
+
+
+def calculate_distance(path_of_origin, destination_id, map):
+    last_station = map.stations[path_of_origin.last]
+    destination = map.stations[destination_id]
+    coord_last = [last_station["x"], last_station["y"]]
+    coord_destination = [destination["x"], destination["y"]]
+    return euclidean_dist(coord_destination, coord_last)
 
 
 def expand(path, map):
@@ -194,7 +204,6 @@ def calculate_cost(expand_paths, map, type_preference=0):
     """
 
     if type_preference == 0:
-        # El cost es calcula en canviar d'estació o sense comptar transbordaments.
         for path in expand_paths:
             path.update_g(1)
 
@@ -215,9 +224,11 @@ def calculate_cost(expand_paths, map, type_preference=0):
 
     elif type_preference == 3:
         for path in expand_paths:
-            path.g = path.transfers
-            # if map.stations[path.last]["name"] == map.stations[path.penultimate]["name"]:
-            #     path.update_g(1)
+            # try:
+            #     path.g = path.transfers
+            # except:
+            if map.stations[path.last]["name"] == map.stations[path.penultimate]["name"]:
+                path.update_g(1)
 
     return expand_paths
 
@@ -233,9 +244,9 @@ def insert_cost(expand_paths, list_of_path):
                list_of_path (LIST of Path Class): List of Paths where expanded_path is inserted according to cost
     """
 
-    with_cost = list(expand_paths + list_of_path)
-    with_cost.sort(key=get_cost)
-    return with_cost
+    list_of_path = expand_paths + list_of_path
+    list_of_path.sort(key=lambda l: [l.g, l.route])
+    return list_of_path
 
 
 def uniform_cost_search(origin_id, destination_id, map, type_preference=0):
@@ -283,34 +294,32 @@ def calculate_heuristics(expand_paths, map, destination_id, type_preference=0):
             expand_paths (LIST of Path Class): Expanded paths with updated heuristics
     """
     if type_preference == 0:
-        # Què coi és l'adjacència?
         for path in expand_paths:
-            path.update_h(uniform_cost_search(
-                path.last, destination_id, map, type_preference).g)
+            if path.last == destination_id:
+                h = 0
+            else:
+                h = 1
+            path.update_h(h)
 
     elif type_preference == 1:
-        # En funció de què la calculem?
         for path in expand_paths:
-            path.update_h(uniform_cost_search(
-                path.last, destination_id, map, type_preference).g)
+            velocity = get_maximum_velocity(map)
+            distance = calculate_distance(path, destination_id, map)
+            h = distance / velocity
+            path.update_h(h)
 
     elif type_preference == 2:
-        # L'única que sé que és correcta
         for path in expand_paths:
-            last_station = map.stations[path.last]
-            destination = map.stations[destination_id]
-            coord_last = [last_station["x"], last_station["y"]]
-            coord_destination = [
-                destination["x"], destination["y"]]
-
-            h = euclidean_dist(coord_destination, coord_last)
+            h = calculate_distance(path, destination_id, map)
             path.update_h(h)
 
     elif type_preference == 3:
         for path in expand_paths:
-            # Which criteria shall we follow?
-            path.update_h(uniform_cost_search(
-                path.last, destination_id, map, 1).transfers)
+            if map.stations[path.last]["line"] == map.stations[destination_id]["line"]:
+                h = 0
+            else:
+                h = 1
+            path.update_h(h)
 
     return expand_paths
 
@@ -324,7 +333,9 @@ def update_f(expand_paths):
          Returns:
              expand_paths (LIST of Path Class): Expanded paths with updated costs
     """
-    pass
+    
+    for path in expand_paths:
+        path.update_f
 
 
 def remove_redundant_paths(expand_paths, list_of_path, visited_stations_cost):
@@ -340,7 +351,21 @@ def remove_redundant_paths(expand_paths, list_of_path, visited_stations_cost):
              new_paths (LIST of Path Class): Expanded paths without redundant paths
              list_of_path (LIST of Path Class): list_of_path without redundant paths
     """
-    pass
+
+    not_redundant_list = list_of_path
+    not_redundant_expanded = expand_paths.copy()
+    updated_costs = visited_stations_cost.copy()
+
+    for expanded in expand_paths:
+        last = expanded.last
+        if last not in visited_stations_cost or expanded.g < visited_stations_cost[last]:
+            not_redundant_list = [p for p in not_redundant_list if last not in p.route]
+            updated_costs[last] = expanded.g
+        else:
+            not_redundant_expanded.remove(expanded)
+
+    return not_redundant_expanded, not_redundant_list, updated_costs
+                
 
 
 def insert_cost_f(expand_paths, list_of_path):
@@ -353,7 +378,14 @@ def insert_cost_f(expand_paths, list_of_path):
            Returns:
                list_of_path (LIST of Path Class): List of Paths where expanded_path is inserted according to f
     """
-    pass
+
+    new_paths = list(expand_paths + list_of_path)
+
+    for path in new_paths:
+        path.update_f()
+
+    new_paths.sort(key=lambda l: [l.f, l.route])
+    return new_paths
 
 
 def coord2station(coord, map):
@@ -398,5 +430,24 @@ def Astar(origin_coor, dest_coor, map, type_preference=0):
                             3 - minimum Transfers
         Returns:
             list_of_path[0] (Path Class): The route that goes from origin_id to destination_id
-    """
-    pass
+    """  
+
+    # if type(origin_coor) is not list:
+    origin_id = coord2station(origin_coor, map)
+    destination_id = coord2station(dest_coor, map)
+    visited = dict()
+    paths = [CoolerPath(id) for id in origin_id]
+
+    while paths and paths[0].last not in destination_id:
+        expanded = expand(paths[0], map)
+        expanded = remove_cycles(expanded)
+        paths.pop(0)
+        expanded = calculate_cost(expanded, map, type_preference)
+        expanded, paths, visited = remove_redundant_paths(expanded, paths, visited)
+        expanded = calculate_heuristics(expanded, map, destination_id[0], type_preference)
+        paths = insert_cost_f(expanded, paths)
+
+    if paths:
+        return paths[0]
+    else:
+        return []
